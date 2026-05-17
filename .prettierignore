@@ -1,0 +1,28 @@
+# Auto-generated files
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+pubspec.lock
+
+# Build outputs
+dist/
+build/
+out/
+coverage/
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Flutter
+apps/mobile/.dart_tool/
+apps/mobile/ios/
+apps/mobile/android/
+
+# Prisma generated
+apps/server/generated/
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock

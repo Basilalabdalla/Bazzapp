@@ -1,0 +1,46 @@
+{
+  "name": "bazz-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BazZ — Jordan's Universal Delivery Platform. Monorepo containing mobile app and backend server.",
+  "author": "BazZ Team",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "lint": "pnpm --filter './apps/**' --filter './packages/**' lint",
+    "lint:fix": "pnpm --filter './apps/**' --filter './packages/**' lint:fix",
+    "format": "prettier --write '**/*.{ts,tsx,js,jsx,json,md,yaml,yml}' --ignore-path .gitignore",
+    "format:check": "prettier --check '**/*.{ts,tsx,js,jsx,json,md,yaml,yml}' --ignore-path .gitignore",
+    "build": "pnpm --filter './packages/**' build && pnpm --filter './apps/**' build",
+    "test": "pnpm --filter './apps/**' --filter './packages/**' test",
+    "clean": "pnpm --filter './apps/**' --filter './packages/**' clean && rm -rf node_modules",
+    "dev:server": "pnpm --filter server dev",
+    "dev:shared-types": "pnpm --filter shared-types dev",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:rebuild": "docker compose up -d --build",
+    "db:migrate": "pnpm --filter server prisma:migrate",
+    "db:studio": "pnpm --filter server prisma:studio",
+    "db:seed": "pnpm --filter server prisma:seed",
+    "db:reset": "pnpm --filter server prisma:reset",
+    "type-check": "pnpm --filter './apps/**' --filter './packages/**' type-check"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "husky": "^9.1.4",
+    "lint-staged": "^15.2.7",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "typescript": "^5.5.4"
+    }
+  }
+}

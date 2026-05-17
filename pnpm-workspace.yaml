@@ -1,0 +1,15 @@
+# ============================================
+# BazZ Platform — pnpm Workspace
+# ============================================
+# Defines which directories are workspace packages
+# pnpm will hoist shared dependencies and link local packages
+
+packages:
+  - "apps/server"
+  - "packages/*"
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@tailwindcss/oxide': true
+  esbuild: true
+  prisma: true
