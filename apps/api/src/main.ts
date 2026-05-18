@@ -24,7 +24,7 @@ const server = http.createServer(app);
 // ── Security & middleware ──────────────────────
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CORS_ORIGINS?.split(',') ?? '*',
+  origin: process.env.CORS_ORIGINS?.split(',') ?? true, // 'true' mirrors request origin, works with credentials
   credentials: true,
 }));
 app.use(compression());
