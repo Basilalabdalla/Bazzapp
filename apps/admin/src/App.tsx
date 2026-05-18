@@ -68,7 +68,7 @@ export default function App() {
             background: '#FFFFFF',
             color: '#1A202C',
             border: '1px solid #E2E8F0',
-            fontFamily: 'Inter, Outfit, sans-serif',
+            fontFamily: 'Inter, sans-serif',
             fontSize: 14,
             boxShadow: '0 4px 12px rgba(26,60,110,0.1)',
           },

@@ -34,7 +34,7 @@ export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
         fontSize,
         fontWeight: 600,
         borderRadius: 20,
-        fontFamily: 'Inter, Outfit, sans-serif',
+        fontFamily: 'Inter, sans-serif',
         whiteSpace: 'nowrap',
       }}
     >

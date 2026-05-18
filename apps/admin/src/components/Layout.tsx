@@ -45,7 +45,7 @@ function NavItem({ to, icon: Icon, label, badge }: NavItemProps) {
             size={17}
             style={{ color: isActive ? '#FFD700' : 'rgba(255,255,255,0.6)', flexShrink: 0 }}
           />
-          <span style={{ fontFamily: 'Inter, Outfit, sans-serif' }}>{label}</span>
+          <span style={{ fontFamily: 'Inter, sans-serif' }}>{label}</span>
           {badge !== undefined && badge > 0 && (
             <span
               className="ml-auto text-xs font-bold rounded-full px-1.5 py-0.5 min-w-[20px] text-center"
@@ -141,7 +141,7 @@ export function Layout() {
           </div>
           <p
             className="text-xs"
-            style={{ color: 'rgba(255,255,255,0.45)', marginLeft: 36, fontFamily: 'Inter, Outfit, sans-serif' }}
+            style={{ color: 'rgba(255,255,255,0.45)', marginLeft: 36, fontFamily: 'Inter, sans-serif' }}
           >
             Admin Console
           </p>

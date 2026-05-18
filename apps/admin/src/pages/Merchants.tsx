@@ -256,7 +256,12 @@ function MerchantRow({
           {merchant.name}
         </p>
         {merchant.nameAr && (
-          <p className="text-xs mt-0.5" dir="rtl" style={{ color: '#64748B' }}>
+          <p
+            className="text-xs mt-0.5"
+            dir="rtl"
+            lang="ar"
+            style={{ color: '#64748B', fontFamily: "'Cairo', sans-serif" }}
+          >
             {merchant.nameAr}
           </p>
         )}

@@ -36,7 +36,7 @@ export function StatsCard({
         <div>
           <p
             className="text-sm font-medium mb-1"
-            style={{ color: '#64748B', fontFamily: 'Inter, Outfit, sans-serif' }}
+            style={{ color: '#64748B', fontFamily: 'Inter, sans-serif' }}
           >
             {label}
           </p>

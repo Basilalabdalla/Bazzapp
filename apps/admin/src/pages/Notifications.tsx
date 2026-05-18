@@ -170,7 +170,7 @@ export default function Notifications() {
                   border: '1px solid #E2E8F0',
                   borderRadius: 8,
                   color: '#1A202C',
-                  fontFamily: 'Inter, Outfit, sans-serif',
+                  fontFamily: 'Inter, sans-serif',
                   outline: 'none',
                 }}
                 onFocus={(e) => (e.currentTarget.style.borderColor = '#1A3C6E')}

@@ -25,6 +25,19 @@
   --sidebar-border: rgba(255, 255, 255, 0.1);
 }
 
+/* ── Font stacks ────────────────────────────────────────────────────────────
+   Inter  = main UI font (matches Flutter app's GoogleFonts.inter)
+   Cairo  = Arabic content (bilingual font, covers ُArabic + Latin)
+   Syne   = display / logo
+   JetBrains Mono = codes, IDs, phone numbers
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --font-ui:      'Inter', 'Cairo', system-ui, sans-serif;
+  --font-arabic:  'Cairo', 'Inter', system-ui, sans-serif;
+  --font-display: 'Syne', 'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -32,9 +45,26 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Inter', 'Outfit', sans-serif;
+  font-family: var(--font-ui);
   margin: 0;
   padding: 0;
+}
+
+/* Arabic text — any element with dir="rtl" or lang="ar" uses Cairo */
+[dir="rtl"],
+[lang="ar"],
+:lang(ar) {
+  font-family: var(--font-arabic);
+  direction: rtl;
+  text-align: right;
+}
+
+/* Auto-detect Arabic Unicode range and switch font automatically.
+   This applies Cairo for Arabic characters even in mixed LTR content. */
+@font-face {
+  font-family: 'ArabicFallback';
+  src: local('Cairo');
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
 }
 
 /* Custom scrollbar */
@@ -89,7 +119,7 @@ thead th {
   padding: 10px 16px;
   border-bottom: 1px solid var(--border);
   text-align: left;
-  font-family: 'Inter', 'Outfit', sans-serif;
+  font-family: var(--font-ui);
   font-weight: 600;
   background: var(--surface-2);
 }
