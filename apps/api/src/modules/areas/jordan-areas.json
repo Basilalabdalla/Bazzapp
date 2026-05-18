@@ -1,0 +1,146 @@
+[
+  {
+    "governorate": "Amman",
+    "governorateAr": "عمّان",
+    "areas": [
+      { "name": "Abdoun", "nameAr": "عبدون" },
+      { "name": "Swefieh", "nameAr": "الصويفية" },
+      { "name": "Khalda", "nameAr": "خلدا" },
+      { "name": "Shmeisani", "nameAr": "الشميساني" },
+      { "name": "Jabal Amman", "nameAr": "جبل عمّان" },
+      { "name": "Jabal Hussein", "nameAr": "جبل الحسين" },
+      { "name": "Marka", "nameAr": "ماركا" },
+      { "name": "Zarqa Road", "nameAr": "طريق الزرقاء" },
+      { "name": "Airport Road", "nameAr": "طريق المطار" },
+      { "name": "Wadi Seer", "nameAr": "وادي السير" },
+      { "name": "Jubaiha", "nameAr": "الجبيهة" },
+      { "name": "Tla Al Ali", "nameAr": "تلاع العلي" },
+      { "name": "Mecca Street", "nameAr": "شارع مكة" },
+      { "name": "Gardens", "nameAr": "الجاردنز" },
+      { "name": "Rabieh", "nameAr": "الرابية" },
+      { "name": "Dahiet Al Rasheed", "nameAr": "ضاحية الرشيد" },
+      { "name": "Marj El Hamam", "nameAr": "مرج الحمام" },
+      { "name": "Sahab", "nameAr": "سحاب" },
+      { "name": "Na'our", "nameAr": "ناعور" },
+      { "name": "Qweismeh", "nameAr": "القويسمة" },
+      { "name": "Yadoudeh", "nameAr": "يادودة" },
+      { "name": "Badr", "nameAr": "بدر" },
+      { "name": "Tlaa Al-Ali", "nameAr": "تلاع العلي" },
+      { "name": "Al-Bayader", "nameAr": "البيادر" }
+    ]
+  },
+  {
+    "governorate": "Zarqa",
+    "governorateAr": "الزرقاء",
+    "areas": [
+      { "name": "Zarqa Downtown", "nameAr": "وسط الزرقاء" },
+      { "name": "New Zarqa", "nameAr": "الزرقاء الجديدة" },
+      { "name": "Hashmi", "nameAr": "الهاشمي" },
+      { "name": "Russeifa", "nameAr": "الرصيفة" },
+      { "name": "Hallabat", "nameAr": "الحلابات" },
+      { "name": "Azraq", "nameAr": "الأزرق" },
+      { "name": "Bireir", "nameAr": "بريير" }
+    ]
+  },
+  {
+    "governorate": "Irbid",
+    "governorateAr": "إربد",
+    "areas": [
+      { "name": "Irbid Downtown", "nameAr": "وسط إربد" },
+      { "name": "Bani Kenana", "nameAr": "بني كنانة" },
+      { "name": "Ramtha", "nameAr": "الرمثا" },
+      { "name": "Mafraq Road", "nameAr": "طريق المفرق" },
+      { "name": "Husn", "nameAr": "الحصن" },
+      { "name": "Koura", "nameAr": "الكورة" },
+      { "name": "Ajloun Road", "nameAr": "طريق عجلون" },
+      { "name": "Turra", "nameAr": "طورّا" }
+    ]
+  },
+  {
+    "governorate": "Balqa",
+    "governorateAr": "البلقاء",
+    "areas": [
+      { "name": "Salt", "nameAr": "السلط" },
+      { "name": "Deir Alla", "nameAr": "دير علا" },
+      { "name": "Shooneh South", "nameAr": "الشونة الجنوبية" },
+      { "name": "Mahis", "nameAr": "ماحص" },
+      { "name": "Fuhais", "nameAr": "الفحيص" },
+      { "name": "Ain Al Basha", "nameAr": "عين الباشا" }
+    ]
+  },
+  {
+    "governorate": "Mafraq",
+    "governorateAr": "المفرق",
+    "areas": [
+      { "name": "Mafraq Downtown", "nameAr": "وسط المفرق" },
+      { "name": "Rhab", "nameAr": "رحاب" },
+      { "name": "Safawi", "nameAr": "الصفاوي" },
+      { "name": "Zaatari", "nameAr": "الزعتري" }
+    ]
+  },
+  {
+    "governorate": "Jerash",
+    "governorateAr": "جرش",
+    "areas": [
+      { "name": "Jerash Downtown", "nameAr": "وسط جرش" },
+      { "name": "Sakib", "nameAr": "ساكب" },
+      { "name": "Burma", "nameAr": "برما" }
+    ]
+  },
+  {
+    "governorate": "Ajloun",
+    "governorateAr": "عجلون",
+    "areas": [
+      { "name": "Ajloun Downtown", "nameAr": "وسط عجلون" },
+      { "name": "Kofranjeh", "nameAr": "كفرنجة" },
+      { "name": "Anjara", "nameAr": "عنجرة" }
+    ]
+  },
+  {
+    "governorate": "Madaba",
+    "governorateAr": "مادبا",
+    "areas": [
+      { "name": "Madaba Downtown", "nameAr": "وسط مادبا" },
+      { "name": "Dhiban", "nameAr": "ذيبان" },
+      { "name": "Libb", "nameAr": "لب" }
+    ]
+  },
+  {
+    "governorate": "Karak",
+    "governorateAr": "الكرك",
+    "areas": [
+      { "name": "Karak Downtown", "nameAr": "وسط الكرك" },
+      { "name": "Qatraneh", "nameAr": "القطرانة" },
+      { "name": "Mazar", "nameAr": "المزار" },
+      { "name": "Ghor Safi", "nameAr": "غور الصافي" }
+    ]
+  },
+  {
+    "governorate": "Tafileh",
+    "governorateAr": "الطفيلة",
+    "areas": [
+      { "name": "Tafileh Downtown", "nameAr": "وسط الطفيلة" },
+      { "name": "Buseira", "nameAr": "بصيرا" }
+    ]
+  },
+  {
+    "governorate": "Ma'an",
+    "governorateAr": "معان",
+    "areas": [
+      { "name": "Ma'an Downtown", "nameAr": "وسط معان" },
+      { "name": "Wadi Musa", "nameAr": "وادي موسى" },
+      { "name": "Shoubak", "nameAr": "الشوبك" },
+      { "name": "Husseiniyeh", "nameAr": "الحسينية" }
+    ]
+  },
+  {
+    "governorate": "Aqaba",
+    "governorateAr": "العقبة",
+    "areas": [
+      { "name": "Aqaba Downtown", "nameAr": "وسط العقبة" },
+      { "name": "King Hussein Street", "nameAr": "شارع الملك الحسين" },
+      { "name": "Industrial Zone", "nameAr": "المنطقة الصناعية" },
+      { "name": "Tala Bay", "nameAr": "خليج تالا" }
+    ]
+  }
+]

@@ -45,38 +45,43 @@ out/
 Thumbs.db
 
 # ---- Flutter / Dart ----
-apps/mobile/.dart_tool/
-apps/mobile/.flutter-plugins
-apps/mobile/.flutter-plugins-dependencies
-apps/mobile/.packages
-apps/mobile/.metadata
-apps/mobile/pubspec.lock
-apps/mobile/build/
-apps/mobile/ios/Pods/
-apps/mobile/ios/.symlinks/
-apps/mobile/android/.gradle/
-apps/mobile/android/.kotlin/
-apps/mobile/android/local.properties
-apps/mobile/android/captures/
-apps/mobile/*.iml
-apps/mobile/*.g.dart
-apps/mobile/**/*.g.dart
-apps/mobile/**/*.freezed.dart
-apps/mobile/**/*.mocks.dart
-apps/mobile/coverage/
+apps/merchant-app/.dart_tool/
+apps/merchant-app/.flutter-plugins
+apps/merchant-app/.flutter-plugins-dependencies
+apps/merchant-app/.packages
+apps/merchant-app/.metadata
+apps/merchant-app/pubspec.lock
+apps/merchant-app/build/
+apps/merchant-app/ios/Pods/
+apps/merchant-app/ios/.symlinks/
+apps/merchant-app/android/.gradle/
+apps/merchant-app/android/.kotlin/
+apps/merchant-app/android/local.properties
+apps/merchant-app/android/captures/
+apps/merchant-app/*.iml
+apps/merchant-app/*.g.dart
+apps/merchant-app/**/*.g.dart
+apps/merchant-app/**/*.freezed.dart
+apps/merchant-app/**/*.mocks.dart
+apps/merchant-app/coverage/
 # Non-mobile Flutter platform scaffolds (BazZ is mobile-only)
-apps/mobile/linux/
-apps/mobile/macos/
-apps/mobile/web/
-apps/mobile/windows/
-# Empty leftover from initial move
-apps/mobile/Figma_dart/
+apps/merchant-app/linux/
+apps/merchant-app/macos/
+apps/merchant-app/web/
+apps/merchant-app/windows/
 # Figma export (design reference only, not production code)
 docs/design/figma-export/
 
 # ---- Prisma ----
-apps/server/prisma/migrations/dev/
-apps/server/generated/
+apps/api/prisma/migrations/dev/
+apps/api/generated/
+
+# ---- Cowork / Claude ----
+.claude/
+
+# ---- Stray root-level files (safe to delete manually) ----
+/login_form_screen.dart
+/main.dart
 
 # ---- Docker ----
 .docker/
@@ -98,8 +103,8 @@ lerna-debug.log*
 firebase-debug.log
 .firebaserc
 # Keep google-services.json structure but not actual keys
-apps/mobile/android/app/google-services.json
-apps/mobile/ios/Runner/GoogleService-Info.plist
+apps/merchant-app/android/app/google-services.json
+apps/merchant-app/ios/Runner/GoogleService-Info.plist
 
 # ---- Certificates & Keys ----
 *.pem
