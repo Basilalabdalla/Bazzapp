@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'firebase_options.dart';
 import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
 import 'providers/app_state.dart';
@@ -44,8 +45,8 @@ final _router = GoRouter(
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase and register the background message handler
-  await Firebase.initializeApp();
+  // Initialize Firebase with generated options and register background handler
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
