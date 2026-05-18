@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'storage_service.dart';
 
@@ -16,12 +15,8 @@ class ApiClient {
   ApiClient._();
   static final ApiClient instance = ApiClient._();
 
-  // Real device → Mac's local IP, Android emulator → 10.0.2.2, iOS simulator → localhost
-  static String get baseUrl {
-    if (Platform.isAndroid) return 'http://10.0.2.2:3000/api';
-    // TODO: set to 'http://localhost:3000/api' when running on iOS simulator
-    return 'http://172.20.10.7:3000/api';
-  }
+  // Production Railway API
+  static const String baseUrl = 'https://bazz-production.up.railway.app/api';
 
   Future<Map<String, String>> _headers({bool auth = true}) async {
     final headers = <String, String>{
