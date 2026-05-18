@@ -382,7 +382,7 @@ function OrderRow({
             {order.packageSize}
           </span>
           {order.isFragile && (
-            <Gem size={12} style={{ color: '#F59E0B' }} title="Fragile" />
+            <Gem size={12} style={{ color: '#F59E0B' }} />
           )}
         </div>
       </td>
