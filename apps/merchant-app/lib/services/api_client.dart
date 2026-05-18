@@ -15,8 +15,12 @@ class ApiClient {
   ApiClient._();
   static final ApiClient instance = ApiClient._();
 
-  // Production Railway API
-  static const String baseUrl = 'https://bazz-production.up.railway.app/api';
+  // URL is injected at build time via --dart-define=API_URL=...
+  // Defaults to production if not specified.
+  static const String baseUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'https://bazz-production.up.railway.app/api',
+  );
 
   Future<Map<String, String>> _headers({bool auth = true}) async {
     final headers = <String, String>{

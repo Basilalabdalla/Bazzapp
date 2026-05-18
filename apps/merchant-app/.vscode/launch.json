@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "🚀 Production",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "--dart-define=API_URL=https://bazz-production.up.railway.app/api"
+      ]
+    },
+    {
+      "name": "🧪 Pilot",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "--dart-define=API_URL=https://bazz-pilot.up.railway.app/api"
+      ]
+    }
+  ]
+}
