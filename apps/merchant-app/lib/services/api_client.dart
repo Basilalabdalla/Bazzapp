@@ -22,6 +22,8 @@ class ApiClient {
     defaultValue: 'https://bazz-production.up.railway.app/api',
   );
 
+  bool _isRefreshing = false;
+
   Future<Map<String, String>> _headers({bool auth = true}) async {
     final headers = <String, String>{
       'Content-Type': 'application/json',
@@ -34,7 +36,7 @@ class ApiClient {
     return headers;
   }
 
-  Map<String, dynamic> _parse(http.Response res) {
+  Map<String, dynamic> _parseMap(http.Response res) {
     final body = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode >= 400) {
       throw ApiException(res.statusCode, body['error'] as String? ?? 'Unknown error');
@@ -42,45 +44,98 @@ class ApiClient {
     return body;
   }
 
+  /// Attempts to refresh the access token using the stored refresh token.
+  /// Returns true if successful, false if the session should be cleared.
+  Future<bool> _tryRefresh() async {
+    if (_isRefreshing) return false;
+    _isRefreshing = true;
+    try {
+      final refreshToken = await StorageService.instance.getRefreshToken();
+      if (refreshToken == null) return false;
+
+      final res = await http.post(
+        Uri.parse('$baseUrl/auth/refresh'),
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: jsonEncode({'refreshToken': refreshToken}),
+      );
+
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
+        await StorageService.instance.saveTokens(
+          accessToken: body['accessToken'] as String,
+          refreshToken: body['refreshToken'] as String,
+          merchantId: await StorageService.instance.getMerchantId() ?? '',
+        );
+        return true;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    } finally {
+      _isRefreshing = false;
+    }
+  }
+
+  /// Executes [request], and if a 401 is returned, refreshes the token and retries once.
+  Future<http.Response> _withRefresh(Future<http.Response> Function(Map<String, String> headers) request) async {
+    final headers = await _headers();
+    var res = await request(headers);
+
+    if (res.statusCode == 401) {
+      final refreshed = await _tryRefresh();
+      if (refreshed) {
+        final newHeaders = await _headers();
+        res = await request(newHeaders);
+      } else {
+        // Refresh failed — clear session so the app redirects to login
+        await StorageService.instance.clearAll();
+      }
+    }
+    return res;
+  }
+
   Future<Map<String, dynamic>> get(String path) async {
-    final res = await http.get(
-      Uri.parse('$baseUrl$path'),
-      headers: await _headers(),
+    final res = await _withRefresh(
+      (h) => http.get(Uri.parse('$baseUrl$path'), headers: h),
     );
-    return _parse(res);
+    return _parseMap(res);
   }
 
   Future<Map<String, dynamic>> post(String path, Map<String, dynamic> body,
       {bool auth = true}) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl$path'),
-      headers: await _headers(auth: auth),
-      body: jsonEncode(body),
+    if (!auth) {
+      final res = await http.post(
+        Uri.parse('$baseUrl$path'),
+        headers: await _headers(auth: false),
+        body: jsonEncode(body),
+      );
+      return _parseMap(res);
+    }
+    final encoded = jsonEncode(body);
+    final res = await _withRefresh(
+      (h) => http.post(Uri.parse('$baseUrl$path'), headers: h, body: encoded),
     );
-    return _parse(res);
+    return _parseMap(res);
   }
 
   Future<Map<String, dynamic>> patch(String path, Map<String, dynamic> body) async {
-    final res = await http.patch(
-      Uri.parse('$baseUrl$path'),
-      headers: await _headers(),
-      body: jsonEncode(body),
+    final encoded = jsonEncode(body);
+    final res = await _withRefresh(
+      (h) => http.patch(Uri.parse('$baseUrl$path'), headers: h, body: encoded),
     );
-    return _parse(res);
+    return _parseMap(res);
   }
 
   Future<Map<String, dynamic>> delete(String path) async {
-    final res = await http.delete(
-      Uri.parse('$baseUrl$path'),
-      headers: await _headers(),
+    final res = await _withRefresh(
+      (h) => http.delete(Uri.parse('$baseUrl$path'), headers: h),
     );
-    return _parse(res);
+    return _parseMap(res);
   }
 
   Future<List<dynamic>> getList(String path) async {
-    final res = await http.get(
-      Uri.parse('$baseUrl$path'),
-      headers: await _headers(),
+    final res = await _withRefresh(
+      (h) => http.get(Uri.parse('$baseUrl$path'), headers: h),
     );
     if (res.statusCode >= 400) {
       final body = jsonDecode(res.body) as Map<String, dynamic>;

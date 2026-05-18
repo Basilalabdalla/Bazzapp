@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
 import 'providers/app_state.dart';
 import 'features/auth/splash_screen.dart';
@@ -38,14 +41,18 @@ final _router = GoRouter(
   ],
 );
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase and register the background message handler
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    // On light surface use dark icons (primary color)
     statusBarIconBrightness: Brightness.dark,
-    statusBarBrightness: Brightness.light, // iOS
+    statusBarBrightness: Brightness.light,
   ));
   runApp(ChangeNotifierProvider(create: (_) => AppState(), child: const BazzApp()));
 }

@@ -1,4 +1,5 @@
 import 'api_client.dart';
+import 'notification_service.dart';
 import 'storage_service.dart';
 
 class MerchantProfile {
@@ -47,6 +48,9 @@ class AuthService {
       refreshToken: res['refreshToken'] as String,
       merchantId: (res['merchant'] as Map<String, dynamic>)['id'] as String,
     );
+
+    // Register FCM token with the backend so push notifications reach this device
+    NotificationService.instance.init().ignore();
 
     return MerchantProfile.fromJson(res['merchant'] as Map<String, dynamic>);
   }

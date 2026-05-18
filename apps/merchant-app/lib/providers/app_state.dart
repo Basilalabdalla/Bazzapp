@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 import '../services/storage_service.dart';
 import '../shared/models/order.dart';
 
@@ -40,6 +41,8 @@ class AppState extends ChangeNotifier {
       _merchant = profile;
       _isLoggedIn = true;
       notifyListeners();
+      // Re-register FCM token in case it rotated while the app was closed
+      NotificationService.instance.init().ignore();
       return true;
     }
     return false;
@@ -52,6 +55,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    await NotificationService.instance.deleteToken();
     await AuthService.instance.logout();
     _merchant = null;
     _isLoggedIn = false;

@@ -49,10 +49,7 @@ export function useWebSocket({ onOrderUpdate }: UseWebSocketOptions = {}) {
             queryClient.invalidateQueries({ queryKey: ['orders'] });
             queryClient.invalidateQueries({ queryKey: ['stats'] });
 
-            toast('An order was just updated', {
-              icon: '📦',
-              style: { background: '#0D1117', color: '#EDF2FF', border: '1px solid #252D3F' },
-            });
+            toast('An order was just updated', { icon: '📦' });
 
             if (onOrderUpdate) {
               onOrderUpdate(msg.data);
