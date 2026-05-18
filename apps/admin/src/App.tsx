@@ -65,17 +65,18 @@ export default function App() {
         position="top-right"
         toastOptions={{
           style: {
-            background: '#0D1117',
-            color: '#EDF2FF',
-            border: '1px solid #252D3F',
-            fontFamily: 'Outfit, sans-serif',
+            background: '#FFFFFF',
+            color: '#1A202C',
+            border: '1px solid #E2E8F0',
+            fontFamily: 'Inter, Outfit, sans-serif',
             fontSize: 14,
+            boxShadow: '0 4px 12px rgba(26,60,110,0.1)',
           },
           success: {
-            iconTheme: { primary: '#22C55E', secondary: '#0D1117' },
+            iconTheme: { primary: '#2ECC71', secondary: '#FFFFFF' },
           },
           error: {
-            iconTheme: { primary: '#EF4444', secondary: '#0D1117' },
+            iconTheme: { primary: '#E53935', secondary: '#FFFFFF' },
           },
         }}
       />

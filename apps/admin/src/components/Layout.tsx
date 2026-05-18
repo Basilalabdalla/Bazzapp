@@ -5,9 +5,9 @@ import {
   Package,
   Store,
   Bell,
-  Zap,
   LogOut,
   ChevronRight,
+  Zap,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -33,9 +33,9 @@ function NavItem({ to, icon: Icon, label, badge }: NavItemProps) {
         }`
       }
       style={({ isActive }) => ({
-        color: isActive ? '#FFBE0B' : '#64748B',
-        background: isActive ? 'rgba(255,190,11,0.08)' : 'transparent',
-        borderLeft: isActive ? '2px solid #FFBE0B' : '2px solid transparent',
+        color: isActive ? '#FFD700' : 'rgba(255,255,255,0.7)',
+        background: isActive ? 'rgba(255,215,0,0.12)' : 'transparent',
+        borderLeft: isActive ? '3px solid #FFD700' : '3px solid transparent',
         marginLeft: -1,
       })}
     >
@@ -43,22 +43,22 @@ function NavItem({ to, icon: Icon, label, badge }: NavItemProps) {
         <>
           <Icon
             size={17}
-            style={{ color: isActive ? '#FFBE0B' : '#64748B', flexShrink: 0 }}
+            style={{ color: isActive ? '#FFD700' : 'rgba(255,255,255,0.6)', flexShrink: 0 }}
           />
-          <span style={{ fontFamily: 'Outfit, sans-serif' }}>{label}</span>
+          <span style={{ fontFamily: 'Inter, Outfit, sans-serif' }}>{label}</span>
           {badge !== undefined && badge > 0 && (
             <span
-              className="ml-auto text-xs font-semibold rounded-full px-1.5 py-0.5 min-w-[20px] text-center"
-              style={{ background: '#FFBE0B', color: '#000' }}
+              className="ml-auto text-xs font-bold rounded-full px-1.5 py-0.5 min-w-[20px] text-center"
+              style={{ background: '#FFD700', color: '#1A3C6E' }}
             >
               {badge > 99 ? '99+' : badge}
             </span>
           )}
-          {!isActive && (
+          {!badge && !isActive && (
             <ChevronRight
               size={12}
               className="ml-auto opacity-0 group-hover:opacity-40 transition-opacity"
-              style={{ color: '#64748B' }}
+              style={{ color: 'rgba(255,255,255,0.5)' }}
             />
           )}
         </>
@@ -95,36 +95,36 @@ export function Layout() {
       // ignore
     }
     logout();
-    toast.success('Logged out');
+    toast.success('Logged out successfully');
     navigate('/login');
   };
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#07080F' }}>
-      {/* Sidebar */}
+    <div className="flex h-screen overflow-hidden" style={{ background: '#F5F7FA' }}>
+      {/* Sidebar — Navy */}
       <aside
-        className="flex flex-col flex-shrink-0 border-r"
+        className="flex flex-col flex-shrink-0"
         style={{
           width: 256,
-          background: '#0D1117',
-          borderColor: '#252D3F',
+          background: '#1A3C6E',
+          boxShadow: '2px 0 8px rgba(26,60,110,0.15)',
         }}
       >
         {/* Logo */}
         <div
           className="px-5 pt-6 pb-5 border-b"
-          style={{ borderColor: '#252D3F' }}
+          style={{ borderColor: 'rgba(255,255,255,0.1)' }}
         >
           <div className="flex items-center gap-2 mb-1">
             <div
               className="rounded-lg p-1.5"
-              style={{ background: 'rgba(255,190,11,0.12)' }}
+              style={{ background: 'rgba(255,215,0,0.15)' }}
             >
-              <Zap size={16} fill="#FFBE0B" style={{ color: '#FFBE0B' }} />
+              <Zap size={16} fill="#FFD700" style={{ color: '#FFD700' }} />
             </div>
             <span
               className="text-2xl font-extrabold tracking-tight"
-              style={{ fontFamily: 'Syne, sans-serif', color: '#FFBE0B' }}
+              style={{ fontFamily: 'Syne, sans-serif', color: '#FFD700' }}
             >
               BazZ
             </span>
@@ -132,16 +132,16 @@ export function Layout() {
             <div className="ml-auto flex items-center gap-1.5">
               <div
                 className="live-dot w-2 h-2 rounded-full"
-                style={{ background: '#22C55E' }}
+                style={{ background: '#2ECC71' }}
               />
-              <span className="text-xs" style={{ color: '#64748B' }}>
+              <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.5)' }}>
                 LIVE
               </span>
             </div>
           </div>
           <p
             className="text-xs"
-            style={{ color: '#64748B', marginLeft: 36, fontFamily: 'Outfit, sans-serif' }}
+            style={{ color: 'rgba(255,255,255,0.45)', marginLeft: 36, fontFamily: 'Inter, Outfit, sans-serif' }}
           >
             Admin Console
           </p>
@@ -161,34 +161,47 @@ export function Layout() {
         </nav>
 
         {/* Admin info + logout */}
-        <div className="px-4 pb-4 border-t pt-4" style={{ borderColor: '#252D3F' }}>
+        <div
+          className="px-4 pb-4 border-t pt-4"
+          style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+        >
           <div
-            className="rounded-lg p-3 mb-2"
-            style={{ background: '#141920' }}
+            className="rounded-lg p-3 mb-3"
+            style={{ background: 'rgba(255,255,255,0.08)' }}
           >
-            <p
-              className="text-sm font-medium truncate"
-              style={{ color: '#EDF2FF' }}
-            >
-              {admin?.name || 'Admin'}
-            </p>
-            <p
-              className="text-xs truncate font-mono mt-0.5"
-              style={{ color: '#64748B' }}
-            >
-              {admin?.phone}
-            </p>
+            <div className="flex items-center gap-2">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                style={{ background: '#FFD700', color: '#1A3C6E' }}
+              >
+                {(admin?.name || 'A')[0].toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <p
+                  className="text-sm font-semibold truncate"
+                  style={{ color: '#FFFFFF' }}
+                >
+                  {admin?.name || 'Admin'}
+                </p>
+                <p
+                  className="text-xs truncate font-mono"
+                  style={{ color: 'rgba(255,255,255,0.45)' }}
+                >
+                  {admin?.phone}
+                </p>
+              </div>
+            </div>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors"
-            style={{ color: '#64748B' }}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-150"
+            style={{ color: 'rgba(255,255,255,0.55)' }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.color = '#EF4444';
-              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,0.08)';
+              (e.currentTarget as HTMLButtonElement).style.color = '#E53935';
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(229,57,53,0.12)';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.color = '#64748B';
+              (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.55)';
               (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
             }}
           >
@@ -200,21 +213,21 @@ export function Layout() {
 
       {/* Main */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Top bar */}
+        {/* Top bar — White */}
         <header
           className="flex items-center justify-between px-6 flex-shrink-0 border-b"
           style={{
             height: 56,
-            background: '#0D1117',
-            borderColor: '#252D3F',
+            background: '#FFFFFF',
+            borderColor: '#E2E8F0',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
           }}
         >
-          {/* Page title injected by pages via document.title or context */}
           <PageTitle />
           <div className="flex items-center gap-4">
             <span
               className="text-sm font-mono"
-              style={{ color: '#64748B' }}
+              style={{ color: '#94A3B8' }}
             >
               {format(now, 'EEE, MMM d · HH:mm:ss')}
             </span>
@@ -222,7 +235,7 @@ export function Layout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto" style={{ background: '#F5F7FA' }}>
           <Outlet />
         </main>
       </div>
@@ -230,7 +243,6 @@ export function Layout() {
   );
 }
 
-// Simple page title that reads the document title
 function PageTitle() {
   const [title, setTitle] = useState('');
 
@@ -252,7 +264,7 @@ function PageTitle() {
   return (
     <h1
       className="text-base font-semibold"
-      style={{ fontFamily: 'Syne, sans-serif', color: '#EDF2FF' }}
+      style={{ fontFamily: 'Inter, Syne, sans-serif', color: '#1A202C' }}
     >
       {title}
     </h1>

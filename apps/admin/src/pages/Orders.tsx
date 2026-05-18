@@ -103,10 +103,10 @@ export default function Orders() {
       {/* Filter bar */}
       <div
         className="rounded-xl border p-4 space-y-3"
-        style={{ background: '#0D1117', borderColor: '#252D3F' }}
+        style={{ background: '#FFFFFF', borderColor: '#E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
       >
         {/* Status tabs */}
-        <div className="flex items-center gap-1 border-b pb-3" style={{ borderColor: '#252D3F' }}>
+        <div className="flex items-center gap-1 border-b pb-3" style={{ borderColor: '#E2E8F0' }}>
           {TABS.map((tab) => {
             const isActive = activeTab === tab.key;
             return (
@@ -116,7 +116,7 @@ export default function Orders() {
                 className="px-3 py-1.5 text-xs font-medium rounded-md transition-colors relative"
                 style={{
                   color: isActive ? '#FFBE0B' : '#64748B',
-                  background: isActive ? 'rgba(255,190,11,0.08)' : 'transparent',
+                  background: isActive ? 'rgba(26,60,110,0.08)' : 'transparent',
                 }}
               >
                 {tab.label}
@@ -134,7 +134,7 @@ export default function Orders() {
               onClick={() => refetch()}
               disabled={isFetching}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors"
-              style={{ borderColor: '#252D3F', color: '#64748B', background: 'transparent' }}
+              style={{ borderColor: '#E2E8F0', color: '#64748B', background: 'transparent' }}
             >
               <RefreshCw
                 size={12}
@@ -199,7 +199,7 @@ export default function Orders() {
       {/* Table */}
       <div
         className="rounded-xl border overflow-hidden"
-        style={{ background: '#0D1117', borderColor: '#252D3F' }}
+        style={{ background: '#FFFFFF', borderColor: '#E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
       >
         {isLoading ? (
           <div className="p-8 space-y-3">
@@ -207,7 +207,7 @@ export default function Orders() {
               <div
                 key={i}
                 className="h-12 rounded-lg animate-pulse"
-                style={{ background: '#141920' }}
+                style={{ background: '#F8FAFC' }}
               />
             ))}
           </div>
@@ -220,7 +220,7 @@ export default function Orders() {
             <button
               onClick={() => refetch()}
               className="px-4 py-2 rounded-lg text-sm font-medium"
-              style={{ background: '#141920', color: '#EDF2FF', border: '1px solid #252D3F' }}
+              style={{ background: '#141920', color: '#1A202C', border: '1px solid #252D3F' }}
             >
               Retry
             </button>
@@ -274,19 +274,19 @@ export default function Orders() {
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={meta.page === 1}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs border transition-colors disabled:opacity-40"
-              style={{ borderColor: '#252D3F', color: '#94A3B8', background: 'transparent' }}
+              style={{ borderColor: '#E2E8F0', color: '#94A3B8', background: 'transparent' }}
             >
               <ChevronLeft size={14} />
               Previous
             </button>
-            <span className="text-xs font-mono" style={{ color: '#EDF2FF' }}>
+            <span className="text-xs font-mono" style={{ color: '#1A202C' }}>
               {meta.page} / {meta.totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
               disabled={meta.page === meta.totalPages}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs border transition-colors disabled:opacity-40"
-              style={{ borderColor: '#252D3F', color: '#94A3B8', background: 'transparent' }}
+              style={{ borderColor: '#E2E8F0', color: '#94A3B8', background: 'transparent' }}
             >
               Next
               <ChevronRight size={14} />
@@ -332,7 +332,7 @@ function OrderRow({
         opacity: isCancelled ? 0.6 : 1,
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLTableRowElement).style.background = '#141920';
+        (e.currentTarget as HTMLTableRowElement).style.background = '#F8FAFC';
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLTableRowElement).style.background = 'transparent';
@@ -340,21 +340,21 @@ function OrderRow({
     >
       {/* Order ID */}
       <td>
-        <span className="text-xs font-mono font-medium" style={{ color: '#FFBE0B' }}>
+        <span className="text-xs font-mono font-medium" style={{ color: '#1A3C6E' }}>
           {order.orderId}
         </span>
       </td>
 
       {/* Merchant */}
       <td>
-        <span className="text-xs" style={{ color: '#EDF2FF' }}>
+        <span className="text-xs" style={{ color: '#1A202C' }}>
           {order.merchant?.name || '—'}
         </span>
       </td>
 
       {/* Recipient */}
       <td>
-        <p className="text-xs" style={{ color: '#EDF2FF' }}>
+        <p className="text-xs" style={{ color: '#1A202C' }}>
           {order.recipientName}
         </p>
         <p className="text-xs mt-0.5 font-mono" style={{ color: '#64748B' }}>
@@ -390,11 +390,11 @@ function OrderRow({
       {/* COD */}
       <td>
         {order.isCod ? (
-          <span className="text-xs font-mono" style={{ color: '#FFBE0B' }}>
+          <span className="text-xs font-mono" style={{ color: '#1A3C6E' }}>
             JD {order.codAmount.toFixed(2)}
           </span>
         ) : (
-          <span className="text-xs" style={{ color: '#3a4557' }}>
+          <span className="text-xs" style={{ color: '#94A3B8' }}>
             —
           </span>
         )}
@@ -409,7 +409,7 @@ function OrderRow({
       <td>
         {order.driverName ? (
           <div>
-            <p className="text-xs" style={{ color: '#EDF2FF' }}>
+            <p className="text-xs" style={{ color: '#1A202C' }}>
               {order.driverName}
             </p>
             <p className="text-xs font-mono mt-0.5" style={{ color: '#64748B' }}>
@@ -417,7 +417,7 @@ function OrderRow({
             </p>
           </div>
         ) : (
-          <span className="text-xs" style={{ color: '#3a4557' }}>
+          <span className="text-xs" style={{ color: '#94A3B8' }}>
             —
           </span>
         )}

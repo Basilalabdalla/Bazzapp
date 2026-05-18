@@ -1,14 +1,15 @@
 import type { OrderStatus } from '../types';
 
+// Matches the Flutter app's BazzColors status palette exactly
 const STATUS_CONFIG: Record<
   OrderStatus,
   { bg: string; color: string; label: string }
 > = {
-  PENDING: { bg: '#1C2333', color: '#94A3B8', label: 'Pending' },
-  PROCESSING: { bg: '#2D2000', color: '#F59E0B', label: 'Processing' },
-  IN_DELIVERY: { bg: '#0F1F3D', color: '#3B82F6', label: 'In Delivery' },
-  DELIVERED: { bg: '#0F2D1A', color: '#22C55E', label: 'Delivered' },
-  CANCELLED: { bg: '#2D0F0F', color: '#EF4444', label: 'Cancelled' },
+  PENDING:     { bg: '#F3F4F6', color: '#6B7280',  label: 'Pending' },
+  PROCESSING:  { bg: '#1A3C6E', color: '#FFFFFF',  label: 'Processing' },
+  IN_DELIVERY: { bg: '#FFD700', color: '#1A3C6E',  label: 'In Delivery' },
+  DELIVERED:   { bg: '#2ECC71', color: '#FFFFFF',  label: 'Delivered' },
+  CANCELLED:   { bg: '#E53935', color: '#FFFFFF',  label: 'Cancelled' },
 };
 
 interface StatusBadgeProps {
@@ -31,9 +32,9 @@ export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
         color: config.color,
         padding,
         fontSize,
-        fontWeight: 500,
+        fontWeight: 600,
         borderRadius: 20,
-        fontFamily: 'Outfit, sans-serif',
+        fontFamily: 'Inter, Outfit, sans-serif',
         whiteSpace: 'nowrap',
       }}
     >

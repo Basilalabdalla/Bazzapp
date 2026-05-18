@@ -68,7 +68,7 @@ export default function Merchants() {
         <div>
           <h2
             className="text-xl font-bold"
-            style={{ fontFamily: 'Syne, sans-serif', color: '#EDF2FF' }}
+            style={{ fontFamily: 'Syne, sans-serif', color: '#1A202C' }}
           >
             Merchants
           </h2>
@@ -79,7 +79,7 @@ export default function Merchants() {
         <button
           onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-opacity"
-          style={{ background: '#FFBE0B', color: '#000', fontFamily: 'Syne, sans-serif' }}
+          style={{ background: '#1A3C6E', color: '#FFFFFF', fontFamily: 'Inter, Syne, sans-serif' }}
         >
           <Plus size={15} />
           Add Merchant
@@ -89,7 +89,7 @@ export default function Merchants() {
       {/* Filter bar */}
       <div
         className="rounded-xl border p-4"
-        style={{ background: '#0D1117', borderColor: '#252D3F' }}
+        style={{ background: '#FFFFFF', borderColor: '#E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
       >
         <div className="relative max-w-sm">
           <Search
@@ -110,7 +110,7 @@ export default function Merchants() {
       {/* Table */}
       <div
         className="rounded-xl border overflow-hidden"
-        style={{ background: '#0D1117', borderColor: '#252D3F' }}
+        style={{ background: '#FFFFFF', borderColor: '#E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
       >
         {isLoading ? (
           <div className="p-8 space-y-3">
@@ -118,7 +118,7 @@ export default function Merchants() {
               <div
                 key={i}
                 className="h-14 rounded-lg animate-pulse"
-                style={{ background: '#141920' }}
+                style={{ background: '#F8FAFC' }}
               />
             ))}
           </div>
@@ -131,7 +131,7 @@ export default function Merchants() {
             <button
               onClick={() => refetch()}
               className="px-4 py-2 rounded-lg text-sm font-medium"
-              style={{ background: '#141920', color: '#EDF2FF', border: '1px solid #252D3F' }}
+              style={{ background: '#141920', color: '#1A202C', border: '1px solid #252D3F' }}
             >
               Retry
             </button>
@@ -187,7 +187,7 @@ export default function Merchants() {
               <ChevronLeft size={14} />
               Previous
             </button>
-            <span className="text-xs font-mono" style={{ color: '#EDF2FF' }}>
+            <span className="text-xs font-mono" style={{ color: '#1A202C' }}>
               {meta.page} / {meta.totalPages}
             </span>
             <button
@@ -244,7 +244,7 @@ function MerchantRow({
   return (
     <tr
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLTableRowElement).style.background = '#141920';
+        (e.currentTarget as HTMLTableRowElement).style.background = '#F8FAFC';
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLTableRowElement).style.background = 'transparent';
@@ -252,7 +252,7 @@ function MerchantRow({
     >
       {/* Name */}
       <td>
-        <p className="text-sm font-medium" style={{ color: '#EDF2FF' }}>
+        <p className="text-sm font-medium" style={{ color: '#1A202C' }}>
           {merchant.name}
         </p>
         {merchant.nameAr && (
@@ -274,7 +274,7 @@ function MerchantRow({
         <span
           className="text-xs font-medium px-2 py-0.5 rounded-full"
           style={{
-            background: merchant.role === 'ADMIN' ? 'rgba(255,190,11,0.12)' : 'rgba(59,130,246,0.12)',
+            background: merchant.role === 'ADMIN' ? 'rgba(26,60,110,0.1)' : 'rgba(59,130,246,0.12)',
             color: merchant.role === 'ADMIN' ? '#FFBE0B' : '#3B82F6',
           }}
         >
@@ -297,7 +297,7 @@ function MerchantRow({
 
       {/* Orders */}
       <td>
-        <span className="text-sm font-mono" style={{ color: '#EDF2FF' }}>
+        <span className="text-sm font-mono" style={{ color: '#1A202C' }}>
           {merchant._count?.orders ?? 0}
         </span>
       </td>
