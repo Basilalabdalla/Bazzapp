@@ -11,7 +11,7 @@ export function BazzLogo({ variant = "colored", size = "md" }: BazzLogoProps) {
   const goldColor = variant === "white" ? "text-[#FFD700]" : "text-[#FFD700]";
 
   return (
-    <div className="relative inline-flex items-center select-none">
+    <div className="relative inline-flex items-center select-none" dir="ltr">
       <span
         className={`${sizes[size]} font-extrabold tracking-tight relative`}
         style={{ fontFamily: "Inter, sans-serif" }}

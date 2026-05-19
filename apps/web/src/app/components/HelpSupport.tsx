@@ -7,6 +7,7 @@ interface HelpSupportProps {
 const socialLinks = [
   {
     name: "X",
+    href: "#",
     color: "#000000",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
@@ -16,6 +17,7 @@ const socialLinks = [
   },
   {
     name: "Instagram",
+    href: "https://www.instagram.com/bazzmartapp",
     color: "#E1306C",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
@@ -25,6 +27,7 @@ const socialLinks = [
   },
   {
     name: "Facebook",
+    href: "#",
     color: "#1877F2",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
@@ -34,6 +37,7 @@ const socialLinks = [
   },
   {
     name: "WhatsApp",
+    href: "#",
     color: "#25D366",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
@@ -43,6 +47,7 @@ const socialLinks = [
   },
   {
     name: "Telegram",
+    href: "#",
     color: "#229ED9",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
@@ -146,8 +151,9 @@ export function HelpSupport({ lang }: HelpSupportProps) {
             {socialLinks.map((s) => (
               <a
                 key={s.name}
-                href="#"
-                onClick={(e) => e.preventDefault()}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-11 h-11 rounded-[12px] flex items-center justify-center hover:opacity-80 transition-opacity"
                 style={{ background: s.color }}
                 title={s.name}

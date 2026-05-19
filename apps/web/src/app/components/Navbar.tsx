@@ -90,7 +90,7 @@ export function Navbar({ lang, onLangChange }: NavbarProps) {
               }`}
               style={{ fontFamily: "Cairo, sans-serif" }}
             >
-              عر
+              عربي
             </button>
           </div>
 
