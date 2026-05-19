@@ -3,8 +3,49 @@ import { z } from 'zod';
 import { OrderStatus, PackageSize } from '@prisma/client';
 import { requireAuth, AuthRequest } from '../../middleware/auth.middleware';
 import * as ordersService from './orders.service';
+import { prisma } from '../../lib/prisma';
 
 export const ordersRouter: IRouter = Router();
+
+// ─── PUBLIC: order tracking (no auth required) ───────────────────────────────
+// GET /orders/track/:ref  →  returns limited public info for a given orderId
+ordersRouter.get('/track/:ref', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const ref = decodeURIComponent(req.params.ref).toUpperCase().trim();
+
+    // Accept both "BZ-1234" and "#BZ-1234" from the customer
+    const normalised = ref.startsWith('#') ? ref : `#${ref}`;
+
+    const order = await prisma.order.findFirst({
+      where: { orderId: normalised },
+      select: {
+        orderId: true,
+        status: true,
+        area: true,
+        areaAr: true,
+        governorate: true,
+        governorateAr: true,
+        driverName: true,
+        driverNameAr: true,
+        createdAt: true,
+        updatedAt: true,
+        statusHistory: {
+          orderBy: { createdAt: 'asc' },
+          select: { status: true, note: true, createdAt: true },
+        },
+      },
+    });
+
+    if (!order) {
+      res.status(404).json({ error: 'Order not found' });
+      return;
+    }
+
+    res.json(order);
+  } catch (err) { next(err); }
+});
+
+// ─── AUTHENTICATED routes ─────────────────────────────────────────────────────
 ordersRouter.use(requireAuth);
 
 const createOrderSchema = z.object({
