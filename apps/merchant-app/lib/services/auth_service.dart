@@ -7,25 +7,34 @@ class MerchantProfile {
   final String phone;
   final String name;
   final String? nameAr;
-  final String? email;
-  final String? memberSince;
+  final DateTime? createdAt;
 
   const MerchantProfile({
     required this.id,
     required this.phone,
     required this.name,
     this.nameAr,
-    this.email,
-    this.memberSince,
+    this.createdAt,
   });
+
+  /// "Jan 2024" style label derived from real createdAt
+  String get memberSinceLabel {
+    if (createdAt == null) return '';
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${months[createdAt!.month - 1]} ${createdAt!.year}';
+  }
 
   factory MerchantProfile.fromJson(Map<String, dynamic> j) => MerchantProfile(
         id: j['id'] as String,
         phone: j['phone'] as String,
         name: j['name'] as String,
         nameAr: j['nameAr'] as String?,
-        email: j['email'] as String?,
-        memberSince: j['memberSince'] as String?,
+        createdAt: j['createdAt'] != null
+            ? DateTime.tryParse(j['createdAt'] as String)
+            : null,
       );
 }
 

@@ -72,6 +72,17 @@ class ChartPoint {
       );
 }
 
+class AreaStat {
+  final String governorate;
+  final int count;
+  const AreaStat({required this.governorate, required this.count});
+
+  factory AreaStat.fromJson(Map<String, dynamic> j) => AreaStat(
+        governorate: j['governorate'] as String? ?? '',
+        count: j['count'] as int? ?? 0,
+      );
+}
+
 class ReportsService {
   ReportsService._();
   static final ReportsService instance = ReportsService._();
@@ -86,5 +97,10 @@ class ReportsService {
   Future<List<ChartPoint>> getOrdersChart(ReportPeriod period) async {
     final res = await _api.getList('/reports/orders-chart?period=${period.apiValue}');
     return res.map((e) => ChartPoint.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<AreaStat>> getAreaStats(ReportPeriod period) async {
+    final res = await _api.getList('/reports/areas?period=${period.apiValue}');
+    return res.map((e) => AreaStat.fromJson(e as Map<String, dynamic>)).toList();
   }
 }

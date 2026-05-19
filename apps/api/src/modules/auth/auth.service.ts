@@ -49,6 +49,7 @@ export async function login(phone: string, password: string) {
       name: merchant.name,
       nameAr: merchant.nameAr,
       role: merchant.role,
+      createdAt: merchant.createdAt,
     },
   };
 }

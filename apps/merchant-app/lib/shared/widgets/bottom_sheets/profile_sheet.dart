@@ -96,9 +96,9 @@ class _ProfileSheetState extends State<ProfileSheet> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final isAr = appState.isArabic;
-    final name = appState.merchantName.isNotEmpty ? appState.merchantName : 'Al Noor Store';
-    final email = appState.merchant?.email ?? 'merchant@bazz.sa';
-    final memberSince = appState.merchant?.memberSince ?? 'Jan 2024';
+    final name = appState.merchantName.isNotEmpty ? appState.merchantName : '';
+    final phone = appState.merchant?.phone ?? '';
+    final memberSince = appState.merchant?.memberSinceLabel ?? '';
 
     return Directionality(
       textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
@@ -193,22 +193,24 @@ class _ProfileSheetState extends State<ProfileSheet> {
             ),
             const SizedBox(height: 4),
 
-            // Email
-            Center(
-              child: Text(
-                email,
-                style: _f(isAr, fs: 13, color: BazzColors.textSecondary),
+            // Phone
+            if (phone.isNotEmpty)
+              Center(
+                child: Text(
+                  phone,
+                  style: _f(isAr, fs: 13, color: BazzColors.textSecondary),
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
-
-            // Member since
-            Center(
-              child: Text(
-                '${isAr ? 'عضو منذ' : 'Member since'} $memberSince',
-                style: _f(isAr, fs: 12, color: BazzColors.textHint),
+            if (memberSince.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              // Member since
+              Center(
+                child: Text(
+                  '${isAr ? 'عضو منذ' : 'Member since'} $memberSince',
+                  style: _f(isAr, fs: 12, color: BazzColors.textHint),
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: 20),
 
             // Menu items
