@@ -4,11 +4,43 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_state.dart';
-import '../../shared/models/order.dart';
+import '../../services/orders_service.dart';
 import '../../shared/widgets/bazz_logo.dart';
 import '../../shared/widgets/bottom_sheets/profile_sheet.dart';
 import '../../theme/colors.dart';
 
+// ─── Data container ───────────────────────────────────────────────────────────
+class _HomeData {
+  final List<Order> recentOrders;
+  final int totalDelivered;
+  final int totalOrders;
+  final int totalCancelled;
+
+  const _HomeData({
+    required this.recentOrders,
+    required this.totalDelivered,
+    required this.totalOrders,
+    required this.totalCancelled,
+  });
+
+  List<Order> get activeOrders => recentOrders
+      .where((o) =>
+          o.status == OrderStatus.pending ||
+          o.status == OrderStatus.processing ||
+          o.status == OrderStatus.inDelivery)
+      .toList();
+
+  List<Order> get recentDeliveries => recentOrders
+      .where((o) => o.status == OrderStatus.delivered)
+      .take(3)
+      .toList();
+
+  int get pendingCount => recentOrders
+      .where((o) => o.status == OrderStatus.pending)
+      .length;
+}
+
+// ─── Root screen ──────────────────────────────────────────────────────────────
 class MerchantHomeScreen extends StatefulWidget {
   const MerchantHomeScreen({super.key});
 
@@ -18,6 +50,45 @@ class MerchantHomeScreen extends StatefulWidget {
 
 class _MerchantHomeScreenState extends State<MerchantHomeScreen> {
   int _navIndex = 0;
+  _HomeData? _homeData;
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final results = await Future.wait([
+        OrdersService.instance.listOrders(limit: 50),
+        OrdersService.instance.listOrders(status: OrderStatus.delivered, limit: 1),
+        OrdersService.instance.listOrders(status: OrderStatus.cancelled, limit: 1),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _homeData = _HomeData(
+          recentOrders: results[0].data,
+          totalDelivered: results[1].total,
+          totalOrders: results[0].total,
+          totalCancelled: results[2].total,
+        );
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+      });
+    }
+  }
 
   void _onNavTap(int i) {
     if (i == 1) { context.push('/orders/current'); return; }
@@ -32,19 +103,21 @@ class _MerchantHomeScreenState extends State<MerchantHomeScreen> {
     final isAr = appState.isArabic;
     final font = isAr ? GoogleFonts.cairo : GoogleFonts.inter;
 
-    final activeCount = appState.localOrders
-            .where((o) => o.status == OrderStatus.pending)
-            .length +
-        mockOrders
-            .where((o) =>
-                o.status == OrderStatus.inDelivery ||
-                o.status == OrderStatus.pending ||
-                o.status == OrderStatus.processing)
-            .length;
+    final activeCount = _homeData?.activeOrders.length ?? 0;
 
     return Scaffold(
       backgroundColor: BazzColors.surface,
-      body: _HomeBody(isAr: isAr, font: font),
+      body: RefreshIndicator(
+        onRefresh: _loadData,
+        color: BazzColors.primary,
+        child: _HomeBody(
+          isAr: isAr,
+          font: font,
+          homeData: _homeData,
+          loading: _loading,
+          error: _error,
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/orders/add'),
         backgroundColor: BazzColors.accent,
@@ -102,6 +175,7 @@ class _MerchantHomeScreenState extends State<MerchantHomeScreen> {
   }
 }
 
+// ─── Nav item ─────────────────────────────────────────────────────────────────
 class _NavItem extends StatelessWidget {
   final IconData icon, selectedIcon;
   final String label;
@@ -154,15 +228,26 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-// ─── Home Body ───────────────────────────────────────────────────────────────
+// ─── Home Body ────────────────────────────────────────────────────────────────
 class _HomeBody extends StatelessWidget {
   final bool isAr;
   final TextStyle Function({double? fontSize, FontWeight? fontWeight, Color? color}) font;
-  const _HomeBody({required this.isAr, required this.font});
+  final _HomeData? homeData;
+  final bool loading;
+  final String? error;
+
+  const _HomeBody({
+    required this.isAr,
+    required this.font,
+    required this.homeData,
+    required this.loading,
+    required this.error,
+  });
 
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         // Navy header card
         SliverToBoxAdapter(child: _HeaderCard(isAr: isAr, font: font)),
@@ -171,37 +256,64 @@ class _HomeBody extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              // Stats card
-              _StatsCard(isAr: isAr, font: font)
-                  .animate().fadeIn(duration: 300.ms).slideY(begin: 0.1, end: 0),
+              if (loading) ...[
+                _LoadingSkeleton(),
+              ] else if (error != null) ...[
+                _ErrorCard(
+                  isAr: isAr,
+                  font: font,
+                  message: error!,
+                ),
+              ] else if (homeData != null) ...[
+                // Stats card
+                _StatsCard(
+                  isAr: isAr,
+                  font: font,
+                  totalDelivered: homeData!.totalDelivered,
+                  totalOrders: homeData!.totalOrders,
+                ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.1, end: 0),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Quick Actions label
-              Text(
-                isAr ? 'إجراءات سريعة' : 'Quick Actions',
-                style: font(fontSize: 16, fontWeight: FontWeight.w700, color: BazzColors.textPrimary),
-              ),
-              const SizedBox(height: 12),
+                // Quick Actions label
+                Text(
+                  isAr ? 'إجراءات سريعة' : 'Quick Actions',
+                  style: font(fontSize: 16, fontWeight: FontWeight.w700, color: BazzColors.textPrimary),
+                ),
+                const SizedBox(height: 12),
 
-              // Quick Actions row — 4 items
-              _QuickActionsRow(isAr: isAr, font: font),
+                // Quick Actions row — 4 items
+                _QuickActionsRow(isAr: isAr, font: font),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Active Orders section
-              _ActiveOrdersSection(isAr: isAr, font: font),
+                // Active Orders section
+                _ActiveOrdersSection(
+                  isAr: isAr,
+                  font: font,
+                  orders: homeData!.activeOrders,
+                ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Recent Deliveries section
-              _RecentDeliveriesSection(isAr: isAr, font: font),
+                // Recent Deliveries section
+                _RecentDeliveriesSection(
+                  isAr: isAr,
+                  font: font,
+                  deliveries: homeData!.recentDeliveries,
+                ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // This Month Performance card
-              _PerformanceCard(isAr: isAr, font: font)
-                  .animate(delay: 400.ms).fadeIn(duration: 300.ms),
+                // This Month Performance card
+                _PerformanceCard(
+                  isAr: isAr,
+                  font: font,
+                  delivered: homeData!.totalDelivered,
+                  pending: homeData!.pendingCount,
+                  cancelled: homeData!.totalCancelled,
+                ).animate(delay: 400.ms).fadeIn(duration: 300.ms),
+              ],
 
               const SizedBox(height: 100),
             ]),
@@ -212,7 +324,96 @@ class _HomeBody extends StatelessWidget {
   }
 }
 
-// ─── Header card (navy gradient, rounded bottom) ─────────────────────────────
+// ─── Loading skeleton ─────────────────────────────────────────────────────────
+class _LoadingSkeleton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _SkeletonBox(height: 90, borderRadius: 16),
+        const SizedBox(height: 20),
+        _SkeletonBox(height: 20, width: 140, borderRadius: 8),
+        const SizedBox(height: 12),
+        Row(
+          children: List.generate(4, (_) => Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: _SkeletonBox(height: 72, borderRadius: 12),
+            ),
+          )),
+        ),
+        const SizedBox(height: 24),
+        _SkeletonBox(height: 180, borderRadius: 12),
+        const SizedBox(height: 24),
+        _SkeletonBox(height: 56, borderRadius: 12),
+        const SizedBox(height: 8),
+        _SkeletonBox(height: 56, borderRadius: 12),
+        const SizedBox(height: 8),
+        _SkeletonBox(height: 56, borderRadius: 12),
+        const SizedBox(height: 20),
+        _SkeletonBox(height: 140, borderRadius: 16),
+      ],
+    )
+        .animate(onPlay: (c) => c.repeat())
+        .shimmer(duration: 1200.ms, color: Colors.white54);
+  }
+}
+
+class _SkeletonBox extends StatelessWidget {
+  final double height;
+  final double? width;
+  final double borderRadius;
+  const _SkeletonBox({required this.height, this.width, required this.borderRadius});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(borderRadius),
+      ),
+    );
+  }
+}
+
+// ─── Error card ───────────────────────────────────────────────────────────────
+class _ErrorCard extends StatelessWidget {
+  final bool isAr;
+  final TextStyle Function({double? fontSize, FontWeight? fontWeight, Color? color}) font;
+  final String message;
+  const _ErrorCard({required this.isAr, required this.font, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: BazzColors.error.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.wifi_off_rounded, size: 40, color: BazzColors.textHint),
+          const SizedBox(height: 12),
+          Text(
+            isAr ? 'تعذّر تحميل البيانات' : 'Failed to load data',
+            style: font(fontSize: 15, fontWeight: FontWeight.w700, color: BazzColors.textPrimary),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            isAr ? 'اسحب للأسفل لإعادة المحاولة' : 'Pull down to retry',
+            style: font(fontSize: 13, color: BazzColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Header card (navy gradient, rounded bottom) ──────────────────────────────
 String _greeting(bool isAr) {
   final h = DateTime.now().hour;
   if (h < 12) return isAr ? 'صباح الخير 👋' : 'Good Morning 👋';
@@ -315,18 +516,25 @@ class _HeaderCard extends StatelessWidget {
                 ],
               ),
             ),
-          ],      // Stack children
-        ),        // Stack
-      ),          // ClipRRect
-    );            // Container
+          ],
+        ),
+      ),
+    );
   }
 }
 
-// ─── Stats card (two columns, one card) ──────────────────────────────────────
+// ─── Stats card ───────────────────────────────────────────────────────────────
 class _StatsCard extends StatelessWidget {
   final bool isAr;
   final TextStyle Function({double? fontSize, FontWeight? fontWeight, Color? color}) font;
-  const _StatsCard({required this.isAr, required this.font});
+  final int totalDelivered;
+  final int totalOrders;
+  const _StatsCard({
+    required this.isAr,
+    required this.font,
+    required this.totalDelivered,
+    required this.totalOrders,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -338,18 +546,18 @@ class _StatsCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Row(
           children: [
-            // Left stat: Delivered This Month
+            // Left stat: Total Delivered
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isAr ? 'التوصيل هذا الشهر' : 'Delivered This Month',
+                    isAr ? 'إجمالي التوصيلات' : 'Total Delivered',
                     style: font(fontSize: 12, color: BazzColors.textSecondary),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '248',
+                    '$totalDelivered',
                     style: font(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
@@ -357,7 +565,7 @@ class _StatsCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    isAr ? '↑ 12% مقارنة بالشهر الماضي' : '↑ 12% vs last month',
+                    isAr ? 'طلب مكتمل' : 'completed orders',
                     style: font(fontSize: 11, color: BazzColors.success),
                   ),
                 ],
@@ -376,7 +584,7 @@ class _StatsCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '312',
+                    '$totalOrders',
                     style: font(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
@@ -384,7 +592,7 @@ class _StatsCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    isAr ? 'هذا الشهر' : 'This Month',
+                    isAr ? 'جميع الطلبات' : 'all time',
                     style: font(fontSize: 11, color: BazzColors.textSecondary),
                   ),
                 ],
@@ -499,29 +707,11 @@ class _QuickActionItem extends StatelessWidget {
 class _ActiveOrdersSection extends StatelessWidget {
   final bool isAr;
   final TextStyle Function({double? fontSize, FontWeight? fontWeight, Color? color}) font;
-  const _ActiveOrdersSection({required this.isAr, required this.font});
+  final List<Order> orders;
+  const _ActiveOrdersSection({required this.isAr, required this.font, required this.orders});
 
   @override
   Widget build(BuildContext context) {
-    final orders = [
-      _ActiveOrder(
-        id: '#BZ-2401',
-        status: isAr ? 'قيد التوصيل' : 'In Delivery',
-        location: isAr ? 'عمان، عبدون' : 'Amman, Abdoun',
-        time: '2:30 PM',
-        driver: isAr ? 'محمد أ.' : 'Mohammed A.',
-        isInDelivery: true,
-      ),
-      _ActiveOrder(
-        id: '#BZ-2402',
-        status: isAr ? 'قيد المعالجة' : 'Processing',
-        location: isAr ? 'عمان، الصويفية' : 'Amman, Swefieh',
-        time: '1:15 PM',
-        driver: isAr ? 'أحمد ك.' : 'Ahmad K.',
-        isInDelivery: false,
-      ),
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -546,43 +736,54 @@ class _ActiveOrdersSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        SizedBox(
-          height: 170,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: orders.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (_, i) => _ActiveOrderCard(order: orders[i], font: font),
+        if (orders.isEmpty)
+          _EmptyState(
+            isAr: isAr,
+            font: font,
+            message: isAr ? 'لا توجد طلبات نشطة حالياً' : 'No active orders right now',
+            icon: Icons.local_shipping_outlined,
+          )
+        else
+          SizedBox(
+            height: 170,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: orders.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (_, i) => _ActiveOrderCard(order: orders[i], isAr: isAr, font: font),
+            ),
           ),
-        ),
       ],
     );
   }
 }
 
-class _ActiveOrder {
-  final String id, status, location, time, driver;
-  final bool isInDelivery;
-  const _ActiveOrder({
-    required this.id,
-    required this.status,
-    required this.location,
-    required this.time,
-    required this.driver,
-    required this.isInDelivery,
-  });
-}
-
 class _ActiveOrderCard extends StatelessWidget {
-  final _ActiveOrder order;
+  final Order order;
+  final bool isAr;
   final TextStyle Function({double? fontSize, FontWeight? fontWeight, Color? color}) font;
-  const _ActiveOrderCard({required this.order, required this.font});
+  const _ActiveOrderCard({required this.order, required this.isAr, required this.font});
+
+  String _formatTime(DateTime dt) {
+    final h = dt.hour;
+    final m = dt.minute.toString().padLeft(2, '0');
+    final period = h >= 12 ? 'PM' : 'AM';
+    final hour12 = h % 12 == 0 ? 12 : h % 12;
+    return '$hour12:$m $period';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = order.isInDelivery ? BazzColors.accent : BazzColors.primary;
-    final chipBg = order.isInDelivery ? BazzColors.accent : BazzColors.primary;
-    final chipText = order.isInDelivery ? BazzColors.primary : Colors.white;
+    final isInDelivery = order.status == OrderStatus.inDelivery;
+    final borderColor = isInDelivery ? BazzColors.accent : BazzColors.primary;
+    final chipBg = isInDelivery ? BazzColors.accent : BazzColors.primary;
+    final chipText = isInDelivery ? BazzColors.primary : Colors.white;
+    final location = isAr
+        ? '${order.areaAr ?? order.area}، ${order.governorateAr ?? order.governorate}'
+        : '${order.area}, ${order.governorate}';
+    final driver = isAr
+        ? (order.driverNameAr ?? order.driverName ?? (isAr ? 'غير محدد' : 'Unassigned'))
+        : (order.driverName ?? 'Unassigned');
 
     return Container(
       width: 220,
@@ -603,7 +804,7 @@ class _ActiveOrderCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(order.id,
+              Text('#${order.orderId}',
                   style: font(
                       fontSize: 14, fontWeight: FontWeight.w700, color: BazzColors.textPrimary)),
               Container(
@@ -612,7 +813,7 @@ class _ActiveOrderCard extends StatelessWidget {
                   color: chipBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(order.status,
+                child: Text(order.status.label(isAr),
                     style: font(fontSize: 10, fontWeight: FontWeight.w700, color: chipText)),
               ),
             ],
@@ -622,7 +823,7 @@ class _ActiveOrderCard extends StatelessWidget {
             const Text('📍', style: TextStyle(fontSize: 12)),
             const SizedBox(width: 4),
             Expanded(
-                child: Text(order.location,
+                child: Text(location,
                     style: font(fontSize: 12, color: BazzColors.textSecondary),
                     overflow: TextOverflow.ellipsis)),
           ]),
@@ -630,14 +831,15 @@ class _ActiveOrderCard extends StatelessWidget {
           Row(children: [
             const Text('🕐', style: TextStyle(fontSize: 12)),
             const SizedBox(width: 4),
-            Text(order.time, style: font(fontSize: 12, color: BazzColors.textSecondary)),
+            Text(_formatTime(order.createdAt),
+                style: font(fontSize: 12, color: BazzColors.textSecondary)),
           ]),
           // Driver
           Row(children: [
             const Text('🚚', style: TextStyle(fontSize: 12)),
             const SizedBox(width: 4),
             Expanded(
-                child: Text(order.driver,
+                child: Text(driver,
                     style: font(fontSize: 12, color: BazzColors.textSecondary),
                     overflow: TextOverflow.ellipsis)),
           ]),
@@ -651,16 +853,23 @@ class _ActiveOrderCard extends StatelessWidget {
 class _RecentDeliveriesSection extends StatelessWidget {
   final bool isAr;
   final TextStyle Function({double? fontSize, FontWeight? fontWeight, Color? color}) font;
-  const _RecentDeliveriesSection({required this.isAr, required this.font});
+  final List<Order> deliveries;
+  const _RecentDeliveriesSection({
+    required this.isAr,
+    required this.font,
+    required this.deliveries,
+  });
+
+  String _formatDate(DateTime dt) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${months[dt.month - 1]} ${dt.day}';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final deliveries = [
-      _Delivery(id: '#BZ-2398', location: isAr ? 'عمان، خلدا' : 'Amman, Khalda', date: 'Dec 12', items: 3),
-      _Delivery(id: '#BZ-2395', location: isAr ? 'عمان، شارع مكة' : 'Amman, Mecca St.', date: 'Dec 11', items: 1),
-      _Delivery(id: '#BZ-2391', location: isAr ? 'إربد، وسط البلد' : 'Irbid, Downtown', date: 'Dec 10', items: 5),
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -683,32 +892,51 @@ class _RecentDeliveriesSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        ...deliveries.asMap().entries.map(
-              (e) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _DeliveryTile(delivery: e.value, font: font)
-                    .animate(delay: (e.key * 60 + 200).ms)
-                    .fadeIn(duration: 250.ms),
+        if (deliveries.isEmpty)
+          _EmptyState(
+            isAr: isAr,
+            font: font,
+            message: isAr ? 'لا توجد توصيلات مكتملة بعد' : 'No deliveries yet',
+            icon: Icons.check_circle_outline_rounded,
+          )
+        else
+          ...deliveries.asMap().entries.map(
+                (e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _DeliveryTile(
+                    order: e.value,
+                    isAr: isAr,
+                    font: font,
+                    date: _formatDate(e.value.createdAt),
+                  ).animate(delay: (e.key * 60 + 200).ms).fadeIn(duration: 250.ms),
+                ),
               ),
-            ),
       ],
     );
   }
 }
 
-class _Delivery {
-  final String id, location, date;
-  final int items;
-  const _Delivery({required this.id, required this.location, required this.date, required this.items});
-}
-
 class _DeliveryTile extends StatelessWidget {
-  final _Delivery delivery;
+  final Order order;
+  final bool isAr;
+  final String date;
   final TextStyle Function({double? fontSize, FontWeight? fontWeight, Color? color}) font;
-  const _DeliveryTile({required this.delivery, required this.font});
+  const _DeliveryTile({
+    required this.order,
+    required this.isAr,
+    required this.date,
+    required this.font,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final location = isAr
+        ? '${order.areaAr ?? order.area}، ${order.governorateAr ?? order.governorate}'
+        : '${order.area}, ${order.governorate}';
+    final codLabel = order.isCod
+        ? 'COD ${order.codAmount.toStringAsFixed(0)} JD'
+        : (isAr ? 'مدفوع مسبقاً' : 'Pre-paid');
+
     return Card(
       elevation: 1,
       color: Colors.white,
@@ -721,18 +949,18 @@ class _DeliveryTile extends StatelessWidget {
           decoration: const BoxDecoration(color: Color(0xFFE8F8EF), shape: BoxShape.circle),
           child: const Icon(Icons.check_rounded, color: BazzColors.success, size: 20),
         ),
-        title: Text(delivery.id,
+        title: Text('#${order.orderId}',
             style: font(fontSize: 13, fontWeight: FontWeight.w700, color: BazzColors.textPrimary)),
-        subtitle: Text(delivery.location,
+        subtitle: Text(location,
             style: font(fontSize: 12, color: BazzColors.textSecondary)),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(delivery.date, style: font(fontSize: 11, color: BazzColors.textSecondary)),
+            Text(date, style: font(fontSize: 11, color: BazzColors.textSecondary)),
             const SizedBox(height: 2),
             Text(
-              '${delivery.items} items',
+              codLabel,
               style: font(fontSize: 12, fontWeight: FontWeight.w700, color: BazzColors.accent),
             ),
           ],
@@ -742,11 +970,49 @@ class _DeliveryTile extends StatelessWidget {
   }
 }
 
+// ─── Empty state widget ───────────────────────────────────────────────────────
+class _EmptyState extends StatelessWidget {
+  final bool isAr;
+  final TextStyle Function({double? fontSize, FontWeight? fontWeight, Color? color}) font;
+  final String message;
+  final IconData icon;
+  const _EmptyState({
+    required this.isAr,
+    required this.font,
+    required this.message,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      alignment: Alignment.center,
+      child: Column(
+        children: [
+          Icon(icon, size: 36, color: BazzColors.textHint),
+          const SizedBox(height: 8),
+          Text(message, style: font(fontSize: 13, color: BazzColors.textSecondary)),
+        ],
+      ),
+    );
+  }
+}
+
 // ─── This Month Performance card ──────────────────────────────────────────────
 class _PerformanceCard extends StatelessWidget {
   final bool isAr;
   final TextStyle Function({double? fontSize, FontWeight? fontWeight, Color? color}) font;
-  const _PerformanceCard({required this.isAr, required this.font});
+  final int delivered;
+  final int pending;
+  final int cancelled;
+  const _PerformanceCard({
+    required this.isAr,
+    required this.font,
+    required this.delivered,
+    required this.pending,
+    required this.cancelled,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -770,7 +1036,7 @@ class _PerformanceCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                isAr ? 'أداء هذا الشهر' : 'This Month Performance',
+                isAr ? 'إحصائيات الطلبات' : 'Order Statistics',
                 style: font(
                     fontSize: 15, fontWeight: FontWeight.w800, color: BazzColors.primary),
               ),
@@ -779,7 +1045,9 @@ class _PerformanceCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            isAr ? 'أنت تؤدي بشكل رائع! 🎉' : "You're doing great! 🎉",
+            delivered > 0
+                ? (isAr ? 'أنت تؤدي بشكل رائع! 🎉' : "You're doing great! 🎉")
+                : (isAr ? 'ابدأ أول طلب لك اليوم!' : 'Start your first order today!'),
             style: font(fontSize: 12, color: const Color(0xFF0D2347)),
           ),
           const SizedBox(height: 16),
@@ -789,7 +1057,7 @@ class _PerformanceCard extends StatelessWidget {
               Expanded(
                 child: _PerfBox(
                   icon: '✅',
-                  value: '248',
+                  value: '$delivered',
                   label: isAr ? 'تم التوصيل' : 'Delivered',
                   font: font,
                 ),
@@ -797,9 +1065,8 @@ class _PerformanceCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _PerfBox(
-                  icon: '⚠️',
-                  iconColor: Colors.orange,
-                  value: '12',
+                  icon: '⏳',
+                  value: '$pending',
                   label: isAr ? 'قيد الانتظار' : 'Pending',
                   font: font,
                 ),
@@ -808,8 +1075,7 @@ class _PerformanceCard extends StatelessWidget {
               Expanded(
                 child: _PerfBox(
                   icon: '❌',
-                  iconColor: BazzColors.error,
-                  value: '3',
+                  value: '$cancelled',
                   label: isAr ? 'ملغاة' : 'Cancelled',
                   font: font,
                 ),
@@ -855,6 +1121,7 @@ class _PerfBox extends StatelessWidget {
   }
 }
 
+// ─── Header line painter ──────────────────────────────────────────────────────
 class _HeaderLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
