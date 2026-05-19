@@ -804,7 +804,7 @@ class _ActiveOrderCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('#${order.orderId}',
+              Text(order.orderId,
                   style: font(
                       fontSize: 14, fontWeight: FontWeight.w700, color: BazzColors.textPrimary)),
               Container(
@@ -949,7 +949,7 @@ class _DeliveryTile extends StatelessWidget {
           decoration: const BoxDecoration(color: Color(0xFFE8F8EF), shape: BoxShape.circle),
           child: const Icon(Icons.check_rounded, color: BazzColors.success, size: 20),
         ),
-        title: Text('#${order.orderId}',
+        title: Text(order.orderId,
             style: font(fontSize: 13, fontWeight: FontWeight.w700, color: BazzColors.textPrimary)),
         subtitle: Text(location,
             style: font(fontSize: 12, color: BazzColors.textSecondary)),
