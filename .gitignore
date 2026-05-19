@@ -114,6 +114,10 @@ apps/merchant-app/ios/Runner/GoogleService-Info.plist
 *.jks
 *.keystore
 
+# ---- Firebase Service Account (NEVER commit — add to Railway env vars) ----
+*firebase-adminsdk*.json
+*service-account*.json
+
 # ---- Cache ----
 .cache/
 .parcel-cache/
