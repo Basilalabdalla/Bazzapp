@@ -11,8 +11,8 @@ RUN npm install -g pnpm@9
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# Copy package files (pnpm-lock.yaml lives at repo root, not in apps/api)
+COPY package.json ./
 COPY prisma ./prisma/
 
 # Install all deps (including dev for build)
