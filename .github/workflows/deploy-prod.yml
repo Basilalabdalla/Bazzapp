@@ -1,8 +1,8 @@
 # ============================================
 # BazZ API — Deploy to PRODUCTION (AWS ECS)
 # ============================================
-# Triggers on push to: main
-# Deploys to: api.bazzmarket.com
+# Triggers on push to: main  →  api.bazzmarket.com
+# Dev/test uses Railway (develop branch) — no AWS action needed for dev
 
 name: Deploy API → Production
 
