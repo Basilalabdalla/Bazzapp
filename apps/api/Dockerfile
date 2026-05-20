@@ -1,21 +1,19 @@
 # ============================================
 # BazZ API — Production Dockerfile
 # ============================================
-# Multi-stage build for minimal image size
-# Used as fallback if App Runner GitHub source has issues
+# Build context: apps/api directory
+# pnpm-lock.yaml is at repo root — not available here
+# so we use --no-frozen-lockfile
 
-# ── Stage 1: Install dependencies ──────────
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
 RUN npm install -g pnpm@9
 
 WORKDIR /app
 
-# Copy package files (pnpm-lock.yaml lives at repo root, not in apps/api)
 COPY package.json ./
 COPY prisma ./prisma/
 
-# Install all deps (including dev for build)
 RUN pnpm install --no-frozen-lockfile
 
 # ── Stage 2: Build ─────────────────────────
@@ -24,7 +22,6 @@ WORKDIR /app
 
 COPY . .
 
-# Generate Prisma client + compile TypeScript
 RUN pnpm build
 
 # ── Stage 3: Production image ───────────────
@@ -34,7 +31,6 @@ RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Copy only what's needed to run
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
