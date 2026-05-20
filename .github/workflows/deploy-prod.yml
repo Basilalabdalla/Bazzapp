@@ -1,0 +1,102 @@
+# ============================================
+# BazZ API — Deploy to PRODUCTION (AWS ECS)
+# ============================================
+# Triggers on push to: main
+# Deploys to: api.bazzmarket.com
+
+name: Deploy API → Production
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/deploy-prod.yml'
+
+env:
+  AWS_REGION: eu-west-1
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  ECS_CLUSTER: bazz-cluster
+  ECS_SERVICE: bazz-prod-service
+  CONTAINER_NAME: bazz-api
+  IMAGE_TAG: latest
+
+jobs:
+  deploy:
+    name: Build & Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production   # Requires manual approval in GitHub if configured
+
+    steps:
+      # ── 1. Checkout ──────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── 2. Configure AWS credentials ─────────
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # ── 3. Login to ECR ───────────────────────
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ── 4. Build & push Docker image ──────────
+      - name: Build, tag, and push image to ECR
+        id: build-image
+        working-directory: apps/api
+        run: |
+          IMAGE_URI="${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+          # Also tag with git SHA for traceability
+          SHA_URI="${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+          docker build -t $IMAGE_URI -t $SHA_URI .
+          docker push $IMAGE_URI
+          docker push $SHA_URI
+          echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
+          echo "sha_image=$SHA_URI" >> $GITHUB_OUTPUT
+
+      # ── 5. Update ECS service (rolling deploy) ─
+      - name: Deploy to ECS (rolling update)
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --force-new-deployment \
+            --deployment-configuration "maximumPercent=200,minimumHealthyPercent=100" \
+            --region ${{ env.AWS_REGION }}
+
+      # ── 6. Wait for deployment (zero downtime) ─
+      - name: Wait for stable deployment
+        run: |
+          echo "Waiting for ECS service to stabilise..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --region ${{ env.AWS_REGION }}
+          echo "✅ Production deployment complete!"
+
+      # ── 7. Health check ───────────────────────
+      - name: Verify production health
+        run: |
+          sleep 15
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://api.bazzmarket.com/health)
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Production health check passed (HTTP $STATUS)"
+          else
+            echo "❌ Production health check FAILED (HTTP $STATUS)"
+            echo "Consider rolling back: aws ecs update-service --cluster bazz-cluster --service bazz-prod-service --task-definition bazz-api-prod:PREVIOUS_REVISION"
+            exit 1
+          fi
+
+      # ── 8. Summary ────────────────────────────
+      - name: Deployment summary
+        if: success()
+        run: |
+          echo "🚀 Production deploy successful"
+          echo "   Image: ${{ env.ECR_REPOSITORY }}:latest"
+          echo "   SHA:   ${{ github.sha }}"
+          echo "   URL:   https://api.bazzmarket.com"

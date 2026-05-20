@@ -1,0 +1,85 @@
+# ============================================
+# BazZ API — Deploy to DEV (AWS ECS)
+# ============================================
+# Triggers on push to: develop
+# Deploys to: api-dev.bazzmarket.com
+
+name: Deploy API → Dev
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/deploy-dev.yml'
+
+env:
+  AWS_REGION: eu-west-1
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  ECS_CLUSTER: bazz-cluster
+  ECS_SERVICE: bazz-dev-service
+  CONTAINER_NAME: bazz-api
+  IMAGE_TAG: dev
+
+jobs:
+  deploy:
+    name: Build & Deploy to Dev
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout ──────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── 2. Configure AWS credentials ─────────
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # ── 3. Login to ECR ───────────────────────
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ── 4. Build & push Docker image ──────────
+      - name: Build, tag, and push image to ECR
+        id: build-image
+        working-directory: apps/api
+        run: |
+          IMAGE_URI="${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
+          echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+      # ── 5. Update ECS service ─────────────────
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+
+      # ── 6. Wait for deployment to complete ────
+      - name: Wait for deployment
+        run: |
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --region ${{ env.AWS_REGION }}
+          echo "✅ Dev deployment complete!"
+
+      # ── 7. Health check ───────────────────────
+      - name: Verify health
+        run: |
+          sleep 15
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://api-dev.bazzmarket.com/health)
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Health check passed (HTTP $STATUS)"
+          else
+            echo "❌ Health check failed (HTTP $STATUS)"
+            exit 1
+          fi

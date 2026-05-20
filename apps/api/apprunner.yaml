@@ -1,0 +1,28 @@
+# ============================================
+# AWS App Runner — BazZ API
+# ============================================
+# Place this file at apps/api/apprunner.yaml
+# In App Runner console → Source directory: apps/api
+
+version: 1.0
+runtime: nodejs18
+
+build:
+  commands:
+    pre-build:
+      - npm install -g pnpm@9
+    build:
+      - pnpm install --no-frozen-lockfile
+      - pnpm build
+  env:
+    - name: NODE_ENV
+      value: production
+
+run:
+  command: sh start.sh
+  network:
+    port: 3000
+    env: PORT
+  env:
+    - name: NODE_ENV
+      value: production
