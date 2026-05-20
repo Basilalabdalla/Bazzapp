@@ -14,8 +14,6 @@ on:
       - '.github/workflows/deploy-prod.yml'
 
 env:
-  AWS_REGION: eu-west-1
-  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
   ECS_CLUSTER: bazz-cluster
   ECS_SERVICE: bazz-prod-service
   CONTAINER_NAME: bazz-api
@@ -27,18 +25,22 @@ jobs:
     runs-on: ubuntu-latest
     environment: production   # Requires manual approval in GitHub if configured
 
+    # Required for OIDC — lets GitHub request a token from AWS
+    permissions:
+      id-token: write   # Request JWT from GitHub's OIDC provider
+      contents: read    # Checkout the repo
+
     steps:
       # ── 1. Checkout ──────────────────────────
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ── 2. Configure AWS credentials ─────────
+      # ── 2. Configure AWS credentials (OIDC — no keys stored) ─────────
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       # ── 3. Login to ECR ───────────────────────
       - name: Login to Amazon ECR
@@ -50,9 +52,9 @@ jobs:
         id: build-image
         working-directory: apps/api
         run: |
-          IMAGE_URI="${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+          IMAGE_URI="${{ secrets.ECR_REPOSITORY }}:latest"
           # Also tag with git SHA for traceability
-          SHA_URI="${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+          SHA_URI="${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}"
           docker build -t $IMAGE_URI -t $SHA_URI .
           docker push $IMAGE_URI
           docker push $SHA_URI

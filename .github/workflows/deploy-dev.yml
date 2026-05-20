@@ -14,8 +14,6 @@ on:
       - '.github/workflows/deploy-dev.yml'
 
 env:
-  AWS_REGION: eu-west-1
-  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
   ECS_CLUSTER: bazz-cluster
   ECS_SERVICE: bazz-dev-service
   CONTAINER_NAME: bazz-api
@@ -26,18 +24,22 @@ jobs:
     name: Build & Deploy to Dev
     runs-on: ubuntu-latest
 
+    # Required for OIDC — lets GitHub request a token from AWS
+    permissions:
+      id-token: write   # Request JWT from GitHub's OIDC provider
+      contents: read    # Checkout the repo
+
     steps:
       # ── 1. Checkout ──────────────────────────
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ── 2. Configure AWS credentials ─────────
+      # ── 2. Configure AWS credentials (OIDC — no keys stored) ─────────
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       # ── 3. Login to ECR ───────────────────────
       - name: Login to Amazon ECR
@@ -49,7 +51,7 @@ jobs:
         id: build-image
         working-directory: apps/api
         run: |
-          IMAGE_URI="${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+          IMAGE_URI="${{ secrets.ECR_REPOSITORY }}:dev"
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
           echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
