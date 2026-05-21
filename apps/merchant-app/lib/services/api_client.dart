@@ -19,7 +19,7 @@ class ApiClient {
   // Defaults to production if not specified.
   static const String baseUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: 'https://bazz-production.up.railway.app/api',
+    defaultValue: 'https://api.bazzmarket.com/api',
   );
 
   bool _isRefreshing = false;
