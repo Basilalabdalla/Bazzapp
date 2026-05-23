@@ -1,0 +1,95 @@
+# ============================================
+# BazZ Admin Console — Deploy to Production (AWS ECS)
+# ============================================
+# Triggers on push to: main (apps/admin changes)
+# Deploys to: admin.bazzmarket.com
+
+name: Deploy Admin → Production
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/admin/**'
+      - '.github/workflows/deploy-admin.yml'
+
+env:
+  ECS_CLUSTER: bazz-cluster
+  ECS_SERVICE: bazz-admin-service
+  CONTAINER_NAME: bazz-admin
+  AWS_REGION: eu-west-1
+
+jobs:
+  deploy:
+    name: Build & Deploy Admin Console
+    runs-on: ubuntu-latest
+    environment: production
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      # ── 1. Checkout ──────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── 2. Configure AWS credentials ─────────
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # ── 3. Login to ECR ───────────────────────
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ── 4. Build & push Docker image ──────────
+      - name: Build, tag, and push admin image to ECR
+        run: |
+          IMAGE_URI="${{ secrets.ECR_ADMIN_REPOSITORY }}:latest"
+          SHA_URI="${{ secrets.ECR_ADMIN_REPOSITORY }}:${{ github.sha }}"
+          docker build \
+            --build-arg VITE_API_URL=https://api.bazzmarket.com \
+            --build-arg VITE_WS_URL=wss://api.bazzmarket.com \
+            -f apps/admin/Dockerfile \
+            -t $IMAGE_URI \
+            -t $SHA_URI \
+            .
+          docker push $IMAGE_URI
+          docker push $SHA_URI
+
+      # ── 5. Deploy to ECS ──────────────────────
+      - name: Deploy to ECS (rolling update)
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --force-new-deployment \
+            --deployment-configuration "maximumPercent=200,minimumHealthyPercent=100"
+
+      # ── 6. Wait for deployment ────────────────
+      - name: Wait for stable deployment
+        timeout-minutes: 10
+        run: |
+          for i in $(seq 1 20); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://admin.bazzmarket.com/health)
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Admin deployment complete! (attempt $i)"
+              exit 0
+            fi
+            echo "⏳ Attempt $i/20 — HTTP $STATUS — waiting 15s..."
+            sleep 15
+          done
+          echo "❌ Deployment did not stabilise in time"
+          exit 1
+
+      # ── 7. Summary ────────────────────────────
+      - name: Deployment summary
+        if: success()
+        run: |
+          echo "🚀 Admin console deployed successfully"
+          echo "   URL: https://admin.bazzmarket.com"
+          echo "   SHA: ${{ github.sha }}"

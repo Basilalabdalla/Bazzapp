@@ -6,6 +6,6 @@ export default defineConfig({
   server: { port: 5173 },
   preview: {
     host: true,
-    allowedHosts: ['bazzapp-production.up.railway.app', 'bazzapp-pilot.up.railway.app'],
+    allowedHosts: ['bazzapp-pilot.up.railway.app', 'admin.bazzmarket.com'],
   },
 })
